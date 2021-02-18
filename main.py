@@ -1,19 +1,16 @@
-def on_button_pressed_a():
-    radio.send_string("n:Kevin Sheck")
-input.on_button_pressed(Button.A, on_button_pressed_a)
-
 def AddOrUpdateContact(SN: number):
     if ContactListDevices.index(SN) == -1:
         ContactListDevices.append(SN)
-        ContactLastUpdate.append(control.millis())
+        ContactLastUpdate.append(RunningSeconds)
     else:
-        ContactLastUpdate[ContactListDevices.index(SN)] = control.millis()
-def GetNameFromMessage(Message: str):
-    if Message.split(":")[0] == "n":
-        return Message.split(":")[1]
+        ContactLastUpdate[ContactListDevices.index(SN)] = RunningSeconds
+def GetNameFromMessage(receivedString: str):
+    if receivedString.split(":")[0] == "n":
+        return receivedString.split(":")[1]
     else:
-        return "Unexepected message " + Message
+        return "Unexepected message " + receivedString
 def PrintContactList():
+    global _PrintContactList_ID
     _PrintContactList_ID = 0
     while _PrintContactList_ID <= len(ContactListDevices) - 1:
         index = 0
@@ -30,14 +27,22 @@ def on_received_string(receivedString):
         pass
 radio.on_received_string(on_received_string)
 
+_PrintContactList_ID = 0
+RunningSeconds = 0
 ContactLastUpdate: List[number] = []
 ContactListDevices: List[number] = []
 radio.set_group(1)
-radio.set_transmit_power(7)
 ContactListDevices = []
 ContactLastUpdate = []
 
 def on_forever():
+    serial.write_line("RunningSeconds:" + ("" + str(RunningSeconds)))
     PrintContactList()
-    basic.pause(6000)
+    basic.pause(5000)
 basic.forever(on_forever)
+
+def on_in_background():
+    global RunningSeconds
+    basic.pause(1000)
+    RunningSeconds += 1
+control.in_background(on_in_background)
