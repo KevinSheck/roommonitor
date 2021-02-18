@@ -1,5 +1,6 @@
 function GetDeviceIndexBySN(SN: number): number {
-    let index = 0
+    
+    index = 0
     while (index <= ContactListDevices.length - 1) {
         if (SN == ContactListDevices[0]) {
             return index
@@ -31,31 +32,54 @@ function GetNameFromMessage(receivedString: string): string {
 
 function PrintContactList() {
     
-    _PrintContactList_ID = 0
-    while (_PrintContactList_ID <= ContactListDevices.length - 1) {
-        serial.writeLine("id;" + ("" + ("" + _PrintContactList_ID)) + "," + "sn:" + ("" + ("" + ContactListDevices[_PrintContactList_ID])) + "," + "lastUpdate:" + ("" + ("" + ContactLastUpdate[_PrintContactList_ID])))
-        _PrintContactList_ID += 1
+    serial.writeLine("Number of Contacts:" + ("" + ("" + ContactListDevices.length)))
+    _ContactNames_Index = 0
+    while (_ContactNames_Index <= ContactNames.length - 1) {
+        serial.writeLine("id;" + ("" + ("" + _ContactNames_Index)) + "," + "n:" + ("" + ContactNames[_ContactNames_Index]) + "," + "lastUpdate:" + ("" + ("" + ContactLastUpdate[_ContactNames_Index])))
+        _ContactNames_Index += 1
     }
 }
 
-radio.onReceivedString(function on_received_string(receivedString: string) {
-    AddOrUpdateContact(radio.receivedPacket(RadioPacketProperty.SerialNumber))
-    if (_py.py_string_split("this", ":")[0] == "n") {
-        
-    } else if (false) {
-        
+function AddOrUpdateContactByName(ContactName: string) {
+    if (GetContactIndexByName(ContactName) == -1) {
+        ContactNames.push(ContactName)
+        ContactLastUpdate.push(RunningSeconds)
     } else {
-        
+        ContactLastUpdate[GetContactIndexByName(ContactName)] = RunningSeconds
     }
     
+}
+
+radio.onReceivedString(function on_received_string(receivedString: string) {
+    basic.showString(receivedString)
+    //  AddOrUpdateContact(radio.received_packet(RadioPacketProperty.SERIAL_NUMBER))
+    AddOrUpdateContactByName(receivedString)
 })
-let _PrintContactList_ID = 0
+function GetContactIndexByName(NameToFind: string): number {
+    
+    _GetContactIndexByName_Index = 0
+    while (_GetContactIndexByName_Index <= ContactNames.length - 1) {
+        if (NameToFind == ContactNames[_GetContactIndexByName_Index]) {
+            return _GetContactIndexByName_Index
+        }
+        
+        _GetContactIndexByName_Index += 1
+    }
+    return -1
+}
+
+let _GetContactIndexByName_Index = 0
+let _ContactNames_Index = 0
 let RunningSeconds = 0
+let index = 0
 let ContactLastUpdate : number[] = []
 let ContactListDevices : number[] = []
+let ContactNames : string[] = []
+ContactNames = []
 radio.setGroup(1)
 ContactListDevices = []
 ContactLastUpdate = []
+//  AddOrUpdateContactByName("kevin")
 basic.forever(function on_forever() {
     
     basic.showIcon(IconNames.Square)
