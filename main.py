@@ -44,5 +44,5 @@ basic.forever(on_forever)
 def on_in_background():
     global RunningSeconds
     basic.pause(1000)
-    RunningSeconds += 1
+    RunningSeconds = RunningSeconds + 1
 control.in_background(on_in_background)
