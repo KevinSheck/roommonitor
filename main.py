@@ -1,9 +1,16 @@
+def GetDeviceIndexBySN(SN: number):
+    index = 0
+    while index <= len(ContactListDevices) - 1:
+        if SN == ContactListDevices[0]:
+            return index
+        index += 1
+    return -1
 def AddOrUpdateContact(SN: number):
-    if ContactListDevices.index(SN) == -1:
+    if GetDeviceIndexBySN(SN) == -1:
         ContactListDevices.append(SN)
         ContactLastUpdate.append(RunningSeconds)
     else:
-        ContactLastUpdate[ContactListDevices.index(SN)] = RunningSeconds
+        ContactLastUpdate[GetDeviceIndexBySN(SN)] = RunningSeconds
 def GetNameFromMessage(receivedString: str):
     if receivedString.split(":")[0] == "n":
         return receivedString.split(":")[1]
@@ -13,8 +20,7 @@ def PrintContactList():
     global _PrintContactList_ID
     _PrintContactList_ID = 0
     while _PrintContactList_ID <= len(ContactListDevices) - 1:
-        index = 0
-        serial.write_line("id;" + ("" + str(_PrintContactList_ID)) + "," + "sn:" + ("" + str(ContactListDevices[index])) + "," + "lastUpdate:" + ("" + str(ContactLastUpdate[index])))
+        serial.write_line("id;" + ("" + str(_PrintContactList_ID)) + "," + "sn:" + ("" + str(ContactListDevices[_PrintContactList_ID])) + "," + "lastUpdate:" + ("" + str(ContactLastUpdate[_PrintContactList_ID])))
         _PrintContactList_ID += 1
 
 def on_received_string(receivedString):
@@ -36,13 +42,10 @@ ContactListDevices = []
 ContactLastUpdate = []
 
 def on_forever():
-    serial.write_line("RunningSeconds:" + ("" + str(RunningSeconds)))
-    PrintContactList()
-    basic.pause(5000)
-basic.forever(on_forever)
-
-def on_in_background():
     global RunningSeconds
+    basic.show_icon(IconNames.SQUARE)
+    PrintContactList()
     basic.pause(1000)
-    RunningSeconds = RunningSeconds + 1
-control.in_background(on_in_background)
+    RunningSeconds += 1
+    basic.show_icon(IconNames.SMALL_SQUARE)
+basic.forever(on_forever)
